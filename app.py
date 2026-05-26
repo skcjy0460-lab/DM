@@ -26,6 +26,7 @@ from diabetes_engine import (
 
 BASE_DIR = Path(__file__).parent
 CATALOG_PATH = BASE_DIR / "data" / "drug_catalog.csv"
+ROOT_CATALOG_PATH = BASE_DIR / "drug_catalog.csv"
 DEFAULT_CATALOG_CSV = """product_name,ingredient,classes,dose,price_krw,price_as_of,source_note
 다이아벡스정500밀리그램,Metformin HCl,MET,500mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
 아마릴정2밀리그램,Glimepiride,SU,2mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
@@ -184,7 +185,13 @@ def builtin_catalog() -> tuple[Drug, ...]:
 def startup_catalog() -> tuple[Drug, ...]:
     if CATALOG_PATH.exists():
         return load_catalog(CATALOG_PATH)
-    st.info("`data/drug_catalog.csv`가 없어 앱에 포함된 기본 제품 목록으로 실행합니다. 약가 업데이트는 CSV 업로드를 이용하세요.")
+    if ROOT_CATALOG_PATH.exists():
+        st.info("최상위의 `drug_catalog.csv` 파일을 불러왔습니다. 권장 위치는 `data/drug_catalog.csv`입니다.")
+        return load_catalog(ROOT_CATALOG_PATH)
+    st.info(
+        "`data/drug_catalog.csv` 또는 `drug_catalog.csv` 파일을 찾지 못해 앱에 포함된 "
+        "기본 제품 목록으로 실행합니다. GitHub의 파일 경로와 파일명(대소문자 포함)을 확인하세요."
+    )
     return builtin_catalog()
 
 
