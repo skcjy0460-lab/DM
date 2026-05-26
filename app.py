@@ -26,6 +26,21 @@ from diabetes_engine import (
 
 BASE_DIR = Path(__file__).parent
 CATALOG_PATH = BASE_DIR / "data" / "drug_catalog.csv"
+DEFAULT_CATALOG_CSV = """product_name,ingredient,classes,dose,price_krw,price_as_of,source_note
+다이아벡스정500밀리그램,Metformin HCl,MET,500mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+아마릴정2밀리그램,Glimepiride,SU,2mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+노보넘정0.5밀리그램,Repaglinide,MEG,0.5mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+글루코바이정100밀리그램,Acarbose,AGI,100mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+액토스정15밀리그램,Pioglitazone HCl,TZD,15mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+제미글로정50밀리그램,Gemigliptin,DPP4,50mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+포시리진정10밀리그램,Dapagliflozin,SGLT2_DA,10mg,334,2026-05-01,공개 약제정보 확인값 - 배포 전 공식 약가파일 대조 필요
+플로가정5밀리그램,Dapagliflozin,SGLT2_DA,5mg,262,2026-05-01,공개 약제정보 확인값 - 배포 전 공식 약가파일 대조 필요
+위디앙정25밀리그램,Empagliflozin,SGLT2_EM,25mg,347,2026-05-01,공개 약제정보 확인값 - 배포 전 공식 약가파일 대조 필요
+슈가논정5밀리그램,Evogliptin,DPP4,5mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+자누비아정100밀리그램,Sitagliptin phosphate,DPP4,100mg,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+다이아벡스엑스알서방정500밀리그램,Metformin HCl,MET,500mg XR,,,기본 내장 데이터 - 공식 약가파일 업로드 후 금액 표시
+직듀오서방정10/1000밀리그램,Dapagliflozin + Metformin HCl,SGLT2_DA+MET,10/1000mg,,,복합제 - 공식 약가파일 업로드 후 금액 표시
+"""
 
 st.set_page_config(
     page_title="GlucoClaim Studio | 당뇨 약제 심사",
@@ -147,6 +162,32 @@ def uploaded_catalog(upload) -> tuple[Drug, ...] | None:
         return None
 
 
+def builtin_catalog() -> tuple[Drug, ...]:
+    frame = pd.read_csv(StringIO(DEFAULT_CATALOG_CSV), dtype=str).fillna("")
+    drugs = []
+    for row in frame.to_dict("records"):
+        price = row["price_krw"].replace(",", "").strip()
+        drugs.append(
+            Drug(
+                product_name=row["product_name"],
+                ingredient=row["ingredient"],
+                classes=tuple(code.strip() for code in row["classes"].split("+")),
+                dose=row["dose"],
+                price_krw=int(price) if price else None,
+                price_as_of=row["price_as_of"],
+                source_note=row["source_note"],
+            )
+        )
+    return tuple(drugs)
+
+
+def startup_catalog() -> tuple[Drug, ...]:
+    if CATALOG_PATH.exists():
+        return load_catalog(CATALOG_PATH)
+    st.info("`data/drug_catalog.csv`가 없어 앱에 포함된 기본 제품 목록으로 실행합니다. 약가 업데이트는 CSV 업로드를 이용하세요.")
+    return builtin_catalog()
+
+
 def render_matrix(selected_classes: tuple[str, ...]) -> None:
     labels = [CLASS_INFO[code][0] for code in CLASS_ORDER]
     values = []
@@ -207,7 +248,7 @@ def clear_clinical_notes() -> None:
     st.session_state.pop("clinical_notes", None)
 
 
-default_catalog = load_catalog(CATALOG_PATH)
+default_catalog = startup_catalog()
 selected_names = st.session_state.get("selected_products", [])
 catalog = st.session_state.get("active_catalog", default_catalog)
 catalog_map = {drug.product_name: drug for drug in catalog}
@@ -280,7 +321,7 @@ with right:
             st.success(f"{len(replacement)}개 제품의 업로드 데이터를 사용합니다. 제품 선택을 다시 확인하세요.")
         st.download_button(
             "CSV 형식 예시 다운로드",
-            data=CATALOG_PATH.read_bytes(),
+            data=CATALOG_PATH.read_bytes() if CATALOG_PATH.exists() else DEFAULT_CATALOG_CSV.encode("utf-8-sig"),
             file_name="diabetes_drug_catalog_template.csv",
             mime="text/csv",
         )

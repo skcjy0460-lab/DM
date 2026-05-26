@@ -37,6 +37,8 @@ cd diabetes_medication_app
 
 `data/drug_catalog.csv`는 앱 형식과 일부 확인 가능한 제품을 포함한 시작 카탈로그입니다. 상한금액은 변동될 수 있으므로 운영 전에는 적용일 기준의 공식 `약제 급여 목록 및 급여 상한금액표` 데이터를 동일한 CSV 열 형식으로 업로드하거나 파일을 교체해야 합니다.
 
+Streamlit Cloud에 `data/drug_catalog.csv`를 올리지 않았더라도 앱은 내장된 기본 카탈로그로 실행됩니다. 다만 제품 목록을 관리하려면 GitHub에서 `data/drug_catalog.csv` 파일도 함께 유지하는 것을 권장합니다.
+
 초기 카탈로그에서 금액을 표시한 제품의 공개 확인 페이지:
 
 - 포시리진정10밀리그램, 334원: https://doccent.com/drugwiki/drug/pheeefiz

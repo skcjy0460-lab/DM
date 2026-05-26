@@ -1,0 +1,14 @@
+product_name,ingredient,classes,dose,price_krw,price_as_of,source_note
+다이아벡스정500밀리그램,Metformin HCl,MET,500mg,,,공식 약가파일 업로드 후 금액 표시
+아마릴정2밀리그램,Glimepiride,SU,2mg,,,공식 약가파일 업로드 후 금액 표시
+노보넘정0.5밀리그램,Repaglinide,MEG,0.5mg,,,공식 약가파일 업로드 후 금액 표시
+글루코바이정100밀리그램,Acarbose,AGI,100mg,,,공식 약가파일 업로드 후 금액 표시
+액토스정15밀리그램,Pioglitazone HCl,TZD,15mg,,,공식 약가파일 업로드 후 금액 표시
+제미글로정50밀리그램,Gemigliptin,DPP4,50mg,,,공식 약가파일 업로드 후 금액 표시
+포시리진정10밀리그램,Dapagliflozin,SGLT2_DA,10mg,334,2026-05-01,공개 약제정보 확인값 - 배포 전 공식 약가파일 대조 필요
+플로가정5밀리그램,Dapagliflozin,SGLT2_DA,5mg,262,2026-05-01,공개 약제정보 확인값 - 배포 전 공식 약가파일 대조 필요
+위디앙정25밀리그램,Empagliflozin,SGLT2_EM,25mg,347,2026-05-01,공개 약제정보 확인값 - 배포 전 공식 약가파일 대조 필요
+슈가논정5밀리그램,Evogliptin,DPP4,5mg,,,공식 약가파일 업로드 후 금액 표시
+자누비아정100밀리그램,Sitagliptin phosphate,DPP4,100mg,,,공식 약가파일 업로드 후 금액 표시
+다이아벡스엑스알서방정500밀리그램,Metformin HCl,MET,500mg XR,,,공식 약가파일 업로드 후 금액 표시
+직듀오서방정10/1000밀리그램,Dapagliflozin + Metformin HCl,SGLT2_DA+MET,10/1000mg,,,복합제 - 공식 약가파일 업로드 후 금액 표시
