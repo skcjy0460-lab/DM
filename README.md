@@ -39,6 +39,20 @@ cd diabetes_medication_app
 
 Streamlit Cloud에서는 `data/drug_catalog.csv` 위치를 권장합니다. 실수로 저장소 최상위에 `drug_catalog.csv`를 올린 경우에도 앱이 자동으로 읽도록 지원합니다. 두 위치 모두에 파일이 없다면 내장된 기본 카탈로그로 실행됩니다.
 
+### 관리자 약가 업데이트
+
+일반 방문자에게는 약가 업데이트 메뉴가 표시되지 않습니다. Streamlit Community Cloud의 앱 설정 `Secrets`에 아래 값을 등록한 뒤, 관리자는 앱 주소 끝에 `?admin=1`을 붙여 접속하고 비밀번호를 입력합니다.
+
+```toml
+ADMIN_PASSWORD = "관리자만 아는 비밀번호"
+```
+
+예시:
+
+```text
+https://앱주소.streamlit.app/?admin=1
+```
+
 초기 카탈로그에서 금액을 표시한 제품의 공개 확인 페이지:
 
 - 포시리진정10밀리그램, 334원: https://doccent.com/drugwiki/drug/pheeefiz

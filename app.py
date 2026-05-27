@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hmac
 from html import escape
 from io import StringIO
 from pathlib import Path
@@ -186,13 +187,31 @@ def startup_catalog() -> tuple[Drug, ...]:
     if CATALOG_PATH.exists():
         return load_catalog(CATALOG_PATH)
     if ROOT_CATALOG_PATH.exists():
-        st.info("최상위의 `drug_catalog.csv` 파일을 불러왔습니다. 권장 위치는 `data/drug_catalog.csv`입니다.")
         return load_catalog(ROOT_CATALOG_PATH)
-    st.info(
-        "`data/drug_catalog.csv` 또는 `drug_catalog.csv` 파일을 찾지 못해 앱에 포함된 "
-        "기본 제품 목록으로 실행합니다. GitHub의 파일 경로와 파일명(대소문자 포함)을 확인하세요."
+    st.warning(
+        "약가 데이터 파일이 연결되지 않아 기본 제품 목록으로 실행 중입니다. "
+        "최신 상한금액 확인이 필요한 경우 관리자에게 문의하세요."
     )
     return builtin_catalog()
+
+
+def administrator_mode() -> bool:
+    if st.query_params.get("admin") != "1":
+        return False
+    with st.sidebar:
+        st.markdown("### 관리자 인증")
+        entered = st.text_input("관리자 비밀번호", type="password")
+        try:
+            expected = str(st.secrets["ADMIN_PASSWORD"])
+        except (KeyError, FileNotFoundError):
+            st.caption("관리자 비밀값이 설정되지 않았습니다.")
+            return False
+        if entered and hmac.compare_digest(entered, expected):
+            st.success("관리자 모드")
+            return True
+        if entered:
+            st.error("비밀번호가 일치하지 않습니다.")
+    return False
 
 
 def render_matrix(selected_classes: tuple[str, ...]) -> None:
@@ -256,6 +275,7 @@ def clear_clinical_notes() -> None:
 
 
 default_catalog = startup_catalog()
+is_admin = administrator_mode()
 selected_names = st.session_state.get("selected_products", [])
 catalog = st.session_state.get("active_catalog", default_catalog)
 catalog_map = {drug.product_name: drug for drug in catalog}
@@ -319,19 +339,20 @@ with right:
     else:
         st.info("제품을 선택하면 성분, 성분군, 상한금액이 표시되고 상단 표가 함께 강조됩니다.")
 
-    with st.expander("약가 데이터 업데이트"):
-        st.write("공식 약가파일을 정리한 CSV를 업로드하면 제품명 검색 및 금액 표시 데이터가 교체됩니다.")
-        price_upload = st.file_uploader("CSV 업로드", type="csv", key="price_upload")
-        replacement = uploaded_catalog(price_upload)
-        if replacement:
-            st.session_state["active_catalog"] = replacement
-            st.success(f"{len(replacement)}개 제품의 업로드 데이터를 사용합니다. 제품 선택을 다시 확인하세요.")
-        st.download_button(
-            "CSV 형식 예시 다운로드",
-            data=CATALOG_PATH.read_bytes() if CATALOG_PATH.exists() else DEFAULT_CATALOG_CSV.encode("utf-8-sig"),
-            file_name="diabetes_drug_catalog_template.csv",
-            mime="text/csv",
-        )
+    if is_admin:
+        with st.expander("약가 데이터 업데이트"):
+            st.write("공식 약가파일을 정리한 CSV를 업로드하면 제품명 검색 및 금액 표시 데이터가 교체됩니다.")
+            price_upload = st.file_uploader("CSV 업로드", type="csv", key="price_upload")
+            replacement = uploaded_catalog(price_upload)
+            if replacement:
+                st.session_state["active_catalog"] = replacement
+                st.success(f"{len(replacement)}개 제품의 업로드 데이터를 사용합니다. 제품 선택을 다시 확인하세요.")
+            st.download_button(
+                "CSV 형식 예시 다운로드",
+                data=CATALOG_PATH.read_bytes() if CATALOG_PATH.exists() else DEFAULT_CATALOG_CSV.encode("utf-8-sig"),
+                file_name="diabetes_drug_catalog_template.csv",
+                mime="text/csv",
+            )
 
 with left:
     st.markdown('<div class="module">03 / 조합 분석 및 심사 의견</div>', unsafe_allow_html=True)
@@ -397,3 +418,14 @@ with foot_b:
         "운영 배포 시 반드시 적용일의 공식 약가파일로 교체·검증해야 합니다.</p>",
         unsafe_allow_html=True,
     )
+
+st.markdown(
+    """
+    <div style="margin-top:1.35rem;padding:1.1rem 1.2rem;border-top:1px solid #d9ddd4;
+    color:#50635e;font-size:.86rem;line-height:1.75;text-align:center;">
+        <b>제작자 : 주식회사 메디엄 조정윤</b><br>
+        모든 저작권은 [주식회사 메디엄 조정윤]에 있으며, 무단 도용 및 배포 시 사전 경고 없이 법적 조치를 취할 수 있습니다.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
